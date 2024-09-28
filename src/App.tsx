@@ -1,35 +1,92 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+} from "react-router-dom";
+import Signup from "./login/signup.jsx";
+import TopHeader from "./layout/TopHeader";
+import Footer from "./layout/Footer";
+// import Login from "./login/login";
+import Top from "./top/Top";
+import Mypage from "./mypage/Mypage";
+import ProfileEditPage from "./prof_edit/ProfEditPage";
+import PostAll from "./post_all/Postall";
+import PostDetail from "./post_detail/post_detail";
+import UserProf from "./user_prof/user_prof";
+import Pot from "./Pots/Pot";
+import ChatAll from "./chat/chat_all";
+import HashTagPost from "./hash_tag/hash_tag";
+import "./App.css";
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+  const [showTopBtn, setShowTopBtn] = useState(false);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 300) {
+        setShowTopBtn(true);
+      } else {
+        setShowTopBtn(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+      <TopHeader></TopHeader>
+      <Router>
+        <Route path="/" element={<p>wwewq</p>} />
 
-export default App
+        <Routes>
+          <Route path="/signup" element={<Signup />} />
+          signup
+          <Route path="*" element={<Navigate to="/login" />} />
+          <Route path="/top" element={<Top></Top>} />
+          <Route path="/mypage" element={<Mypage></Mypage>} />
+          <Route
+            path="/prof_edit"
+            element={<ProfileEditPage></ProfileEditPage>}
+          />
+          <Route path="/post_all" element={<PostAll></PostAll>} />
+          <Route
+            path="/post_detail/:id"
+            element={<PostDetail></PostDetail>}
+          ></Route>
+          <Route path="/user_prof/:id" element={<UserProf></UserProf>}></Route>
+          <Route path="/pots" element={<Pot></Pot>}></Route>
+          <Route path="/chat" element={<ChatAll></ChatAll>}></Route>
+          <Route
+            path="/hashtags/:hashtag"
+            element={<HashTagPost></HashTagPost>}
+          ></Route>
+        </Routes>
+      </Router>
+      <Footer></Footer>
+      <a
+        href="#top"
+        className={`to-top ${showTopBtn ? "show" : ""}`}
+        onClick={(e) => {
+          e.preventDefault();
+          scrollToTop();
+        }}
+      >
+        Top
+      </a>
+    </>
+  );
+};
+
+export default App;
