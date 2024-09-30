@@ -16,12 +16,13 @@ import UserProf from "./user_prof/user_prof";
 import Pot from "./Pots/Pot";
 import ChatAll from "./chat/chat_all";
 import HashTagPost from "./hash_tag/hash_tag";
-// import { UIProviderProps } from "@yamada-ui/react";
+// import { UIProvider } from "@yamada-ui/react";
 import "./App.css";
 
 const App = () => {
   return (
     <>
+    {/* <UIProvider></UIProvider> */}
       <TopHeader></TopHeader>
 
         <Routes>
