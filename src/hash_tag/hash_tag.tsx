@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import Post from "../post/post";
-import Sidebar from "../post_all/component/sidebar";
-import LikeButton from "../nice/nice";
-import Bookmark from "../bookmark/bookmark";
-import './css/hash_tag.css';
+import Post from "../post/post.tsx";
+import Sidebar from "../post_all/component/sidebar.tsx";
+import LikeButton from "../nice/nice.tsx";
+import Bookmark from "../bookmark/bookmark.tsx";
+import "./css/hash_tag.css";
 import {
   Box,
   Image,
@@ -20,12 +20,22 @@ import {
   CardBody,
   CardFooter,
 } from "@yamada-ui/react";
+import React from "react";
+
+interface Moyamoya {
+  id: number;
+  post: string;
+  user_id: number;
+  created_at: string;
+  count: number;
+}
 
 const HashTagPost = () => {
   const { hashtag } = useParams();
+  console.log(hashtag);
 
-  const [post, setPost] = useState([]);
-  const [followPost, setFollowPost] = useState([]);
+  const [post, setPost] = useState<Moyamoya[]>([]);
+  const [followPost, setFollowPost] = useState<Moyamoya[]>([]);
   const [userData, setUserData] = useState({});
   const [followUserData, setFollowUserData] = useState({});
   const [loading, setLoading] = useState(true);
@@ -36,123 +46,124 @@ const HashTagPost = () => {
     setBgColor(index);
   };
   useEffect(() => {
-    const fetchHashtagPosts = async () => {
-      try {
-        const response = await fetch(
-          `http://127.0.0.1:5000/hashtags/${hashtag}`,{
-            method: 'GET'
+    if (hashtag) {
+      // hashtag があるか確認
+      const fetchHashtagPosts = async () => {
+        try {
+          const response = await fetch(
+            `http://127.0.0.1:5000/hashtags/${hashtag}`
+          );
+          if (response.ok) {
+            const data = await response.json();
+            setPost(data);
+          } else {
+            console.error("Failed to fetch posts");
           }
+        } catch (error) {
+          console.error("Error fetching posts:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchHashtagPosts();
+    }
+  }, [hashtag]);
+
+  // 投稿に対するユーザー情報を取得
+  useEffect(() => {
+    const fetchUsersData = async () => {
+      try {
+        const userIds = [...new Set(post.map((post) => post.user_id))];
+        const userDataPromises = userIds.map((id) =>
+          fetch(`http://127.0.0.1:5000/users/${id}`).then((response) =>
+            response.json()
+          )
         );
+        const users = await Promise.all(userDataPromises);
+        const userMap = {};
+        users.forEach((user) => {
+          userMap[user.id] = user;
+        });
+        setUserData(userMap);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+    if (post.length > 0) {
+      fetchUsersData();
+    }
+  }, [post]);
+
+  // フォロー中のユーザーの投稿を取得
+  useEffect(() => {
+    const fetchFollowPost = async () => {
+      const token = localStorage.getItem("token");
+      try {
+        const response = await fetch("http://127.0.0.1:5000/moyamoya_follow", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         if (response.ok) {
           const data = await response.json();
-          setPost(data);
+          setFollowPost(data);
+          setLoading(false);
         } else {
-          console.error("Failed to fetch posts");
+          console.error("Failed to fetch follow posts");
+          setLoading(false);
         }
       } catch (error) {
-        console.error("Error fetching posts:", error);
-      } finally {
+        console.error("Error fetching follow posts:", error);
         setLoading(false);
       }
     };
-    fetchHashtagPosts();
-  }, [hashtag]);
+    fetchFollowPost();
+  }, []);
 
-    // 投稿に対するユーザー情報を取得
-    useEffect(() => {
-        const fetchUsersData = async () => {
-          try {
-            const userIds = [...new Set(post.map((post) => post.user_id))];
-            const userDataPromises = userIds.map((id) =>
-              fetch(`http://127.0.0.1:5000/users/${id}`).then((response) =>
-                response.json()
-              )
-            );
-            const users = await Promise.all(userDataPromises);
-            const userMap = {};
-            users.forEach((user) => {
-              userMap[user.id] = user;
-            });
-            setUserData(userMap);
-          } catch (error) {
-            console.error("Error fetching users:", error);
-          }
-        };
-        if (post.length > 0) {
-          fetchUsersData();
-        }
-      }, [post]);
-    
-      // フォロー中のユーザーの投稿を取得
-      useEffect(() => {
-        const fetchFollowPost = async () => {
-          const token = localStorage.getItem("token");
-          try {
-            const response = await fetch("http://127.0.0.1:5000/moyamoya_follow", {
-              method: "GET",
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-            if (response.ok) {
-              const data = await response.json();
-              setFollowPost(data);
-              setLoading(false);
-            } else {
-              console.error("Failed to fetch follow posts");
-              setLoading(false);
-            }
-          } catch (error) {
-            console.error("Error fetching follow posts:", error);
-            setLoading(false);
-          }
-        };
-        fetchFollowPost();
-      }, []);
-    
-      // フォロー中のユーザー情報を取得
-      useEffect(() => {
-        const fetchUsersFollowData = async () => {
-          try {
-            const userIds = [...new Set(followPost.map((post) => post.user_id))];
-            const userDataPromises = userIds.map((id) =>
-              fetch(`http://127.0.0.1:5000/users/${id}`).then((response) =>
-                response.json()
-              )
-            );
-            const users = await Promise.all(userDataPromises);
-            const userMap = {};
-            users.forEach((user) => {
-              userMap[user.id] = user;
-            });
-            setFollowUserData(userMap);
-          } catch (error) {
-            console.error("Error fetching follow users:", error);
-          }
-        };
-        if (followPost.length > 0) {
-          fetchUsersFollowData();
-        }
-      }, [followPost]);
-    
-      const HashTag = (text) => {
-        const hashTagRegex = /#[\w]+/g;
-        return text.split(hashTagRegex).map((part,index) => {
-          const match = text.match(hashTagRegex);
-          if (match && match[index - 1]) {
-            const hashtag = match[index - 1];
-            return (
-              <>
-                {part}
-                <Link href={`/hashtags/${hashtag.slice(1)}`} color="blue">
-                  {hashtag}
-                </Link>
-              </>
-            );
-          };
-          return part;
+  // フォロー中のユーザー情報を取得
+  useEffect(() => {
+    const fetchUsersFollowData = async () => {
+      try {
+        const userIds = [...new Set(followPost.map((post) => post.user_id))];
+        const userDataPromises = userIds.map((id) =>
+          fetch(`http://127.0.0.1:5000/users/${id}`).then((response) =>
+            response.json()
+          )
+        );
+        const users = await Promise.all(userDataPromises);
+        const userMap = {};
+        users.forEach((user) => {
+          userMap[user.id] = user;
         });
-      };
+        setFollowUserData(userMap);
+      } catch (error) {
+        console.error("Error fetching follow users:", error);
+      }
+    };
+    if (followPost.length > 0) {
+      fetchUsersFollowData();
+    }
+  }, [followPost]);
+
+  const HashTag = (text) => {
+    const hashTagRegex = /#[\w]+/g;
+    return text.split(hashTagRegex).map((part, index) => {
+      const match = text.match(hashTagRegex);
+      if (match && match[index - 1]) {
+        const hashtag = match[index - 1];
+        return (
+          <>
+            {part}
+            <Link href={`/hashtags/${hashtag.slice(1)}`} color="blue">
+              {hashtag}
+            </Link>
+          </>
+        );
+      }
+      return part;
+    });
+  };
 
   if (loading) {
     return <p>loading</p>;
@@ -160,7 +171,7 @@ const HashTagPost = () => {
 
   return (
     <>
-      <h1 className="postalltitle">モヤモヤ投稿一覧</h1>
+      <h1 className="hashalltitle">モヤモヤ投稿一覧</h1>
       <Box display={"flex"}>
         <Sidebar />
         <VStack ml={-170}>
@@ -186,9 +197,9 @@ const HashTagPost = () => {
 
             <TabPanels>
               <TabPanel>
-                <Box className="post_all">
+                <Box className="hash_all">
                   <Box>
-                    <Box className="post">
+                    <Box className="hash">
                       {post.map((post) => (
                         <Card className="postlist" key={post.id}>
                           {userData[post.user_id] ? (

@@ -1,17 +1,36 @@
-import { Box, Input } from "@yamada-ui/react";
+import { Box } from "@yamada-ui/react";
+import React, { useEffect, useState } from "react";
+import "./css/sidebar.css";
+
+interface Tag {
+  tag: string;
+  count: number;
+}
 
 const Sidebar = () => {
-    return (
-        <Box w="15%" h={"auto"}backgroundColor={"gray.100"}>
-            <form action="">
-                <Input placeholder="Search" />
-            </form>
+  const [trend, setTrend] = useState<Tag[]>([]);
 
-            <Box w="100%" h={200} backgroundColor={"orange"}>
-                hasshutagu
-            </Box>
-        </Box>
-    )
+  useEffect(() => {
+    fetch("http://127.0.0.1:5000/hashtag_trend")
+      .then((response) => response.json())
+      .then((data) => setTrend(data));
+  }, []);
+
+  
+  return (
+    <Box className="sidebar-container">
+      <Box className="trend-box">
+        <h5>トレンド一覧</h5>
+        <ul>
+          {trend.map((tag) => (
+            <li key={tag.tag}>
+              {tag.tag} ({tag.count})
+            </li>
+          ))}
+        </ul>
+      </Box>
+    </Box>
+  );
 };
 
 export default Sidebar;

@@ -1,58 +1,73 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Text, Link, Image, Center } from "@yamada-ui/react";
-import LikeButton from "../../nice/nice";
-import Bookmark from "../../bookmark/bookmark";
-import './css/user_bookmark.css';
+import LikeButton from "../../nice/nice.tsx";
+import Bookmark from "../../bookmark/bookmark.tsx";
+import "./css/user_bookmark.css";
+import { Moyamoya } from "../../post_all/Postall";
 
-const UserBookmark = ({userId}) => {
-    const [bookmark, setBookmark] = useState([]);
-    const [userData, setUseData] = useState({});
-    const [loading, setLoading] = useState(true);
+export interface User {
+  user_id: number;
+  name: string;
+  prof_image: string;
+  second_image: string;
+  prof_comment: string;
+  password: string;
+  email: string;
+}
 
-    useEffect(() => {
-        const fetchBookmark = async () => {
-            try {
-                const response = await fetch(`http://127.0.0.1:5000/user_bookmark/${userId}`,{
-                    method: 'GET',
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    setBookmark(data);
-                    setLoading(false);
-                } else {
-                    console.error('Failed to fetch posts');
-                    setLoading(false);
-                }
-            } catch (error) {
-                console.error('Failed to fetch posts:',error);
-                setLoading(false);
-            }
-        };
-        fetchBookmark();
-    },[userId]);
+const UserBookmark = ({ userId }: { userId: number }) => {
+  const [bookmark, setBookmark] = useState<Moyamoya[]>([]);
+  const [userData, setUseData] = useState<{ [key: number]: User } | null>(null);
+  const [loading, setLoading] = useState(true);
 
-      //保存した投稿のユーザー取得
+  useEffect(() => {
+    const fetchBookmark = async () => {
+      try {
+        const response = await fetch(
+          `http://127.0.0.1:5000/user_bookmark/${userId}`,
+          {
+            method: "GET",
+          }
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setBookmark(data);
+          setLoading(false);
+        } else {
+          console.error("Failed to fetch posts");
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Failed to fetch posts:", error);
+        setLoading(false);
+      }
+    };
+    fetchBookmark();
+  }, [userId]);
+
   useEffect(() => {
     const fetchBookmarkUser = async () => {
-        try {
-            const userIds = [...new Set(bookmark.map((bookmark) => bookmark.user_id))];
-            const userDataPromises = userIds.map((id) =>
-                fetch(`http://127.0.0.1:5000/users/${id}`).then((response) =>
-                    response.json()
-                )
-            );
-            const users = await Promise.all(userDataPromises);
-            const usermap = {};
-            users.forEach((user) => {
-                usermap[user.id] = user;
-            });
-            setUseData(usermap);
-        } catch (error) {
-            console.error('Error fetching users:', error);
-        }
+      try {
+        const userIds = [
+          ...new Set(bookmark.map((bookmark) => bookmark.user_id)),
+        ];
+        const userDataPromises = userIds.map((id) =>
+          fetch(`http://127.0.0.1:5000/users/${id}`).then((response) =>
+            response.json()
+          )
+        );
+        const users = await Promise.all(userDataPromises);
+        const usermap: { [key: number]: User } = {};
+        users.forEach((user: User) => {
+          usermap[user.user_id] = user;
+        });
+        setUseData(usermap);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
     };
     if (bookmark.length > 0) {
-        fetchBookmarkUser();
+      fetchBookmarkUser();
     }
   }, [bookmark]);
 
@@ -60,9 +75,8 @@ const UserBookmark = ({userId}) => {
     return <p>Loading</p>;
   }
 
-  
   return (
-    <Box w={1500} maxWidth='80%' margin='0 auto'>
+    <Box w={1500} maxWidth="80%" margin="0 auto 30px auto">
       {bookmark.length > 0 ? (
         <ul className="post">
           {bookmark.map((post) => (
@@ -80,14 +94,16 @@ const UserBookmark = ({userId}) => {
                       h={50}
                       borderRadius={100}
                       src={
-                        userData.prof_image
-                          ? `http://127.0.0.1:5000/prof_image/${userData.prof_image}`
+                        userData && userData[post.user_id]?.prof_image
+                          ? `http://127.0.0.1:5000/prof_image/${
+                              userData[post.user_id].prof_image
+                            }`
                           : "not_profileicon.jpg"
                       }
-                      alt="prof image"
+                      alt="プロフィール画像"
                     />
                     <Text mt={10} marginLeft={10}>
-                      {userData.name}
+                      {userData && userData[post.user_id]?.name}
                     </Text>
                   </Link>
                 </Box>
@@ -120,5 +136,6 @@ const UserBookmark = ({userId}) => {
       )}
     </Box>
   );
-}
+};
+
 export default UserBookmark;

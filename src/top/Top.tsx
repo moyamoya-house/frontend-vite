@@ -1,9 +1,9 @@
 import { Text, Box, Center, Image, Link } from '@yamada-ui/react';
-import { useEffect, useState } from 'react';
-import Baloon from './component/baloon';
-import BaloonTopRight from './component/baloon-topright';
-import BaloonTopLeft from './component/baloon-topleft';
-import BaloonBottomRight from './component/baloon-bottomright';
+import React,{ useEffect, useState } from 'react';
+import Baloon from './component/baloon.tsx';
+import BaloonTopRight from './component/baloon-topright.tsx';
+import BaloonTopLeft from './component/baloon-topleft.tsx';
+import BaloonBottomRight from './component/baloon-bottomright.tsx';
 import './css/top.css';
 
 const Top = () => {
@@ -93,7 +93,7 @@ const Top = () => {
                         </Center>
                     </Box>
                     <Box className='link'>
-                        <Link href='/potcom' textDecoration={'none'} display={'inline-block'} color={'black'}>愚痴の壺</Link>
+                        <Link href='/pots' textDecoration={'none'} display={'inline-block'} color={'black'}>愚痴の壺</Link>
                     </Box>
                 </Box>
             </Box>

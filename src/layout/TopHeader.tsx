@@ -9,14 +9,25 @@ import {
   Box,
   Image,
   Link,
+  CloseButton,
+  DrawerOverlay,
+  Badge,
 } from "@yamada-ui/react";
 import "./css/layout.css";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState} from "react";
+
+interface User {
+  user_id: number;
+  name: string;
+  prof_image: string;
+}
+
 
 
 const TopHeader = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [userData, setUserData] = useState(null);
+  const [userData, setUserData] = useState<User | null>(null);
+  const [count, setCount] = useState(0);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -34,17 +45,31 @@ const TopHeader = () => {
     };
     fetchUserData();
   }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const token = localStorage.getItem("token");
+      fetch("http://127.0.0.1:5000/notification/unread-count",{
+        headers: { Authorization: `Bearer ${token}` }
+      }).then(res => res.json())
+      .then(data => setCount(data.unread_count));
+    },5000);
+    return () => clearInterval(interval);
+  },[]);
+
+
   return (
     <>
       {userData ? (
         <Box className="header">
           <Link href="/top">
-            <Image src="./PotCom_logo_typography.png" alt="pot" h={100}></Image>
+            <Image src="/PotCom_logo_typography.png" alt="pot" h={100}></Image>
           </Link>
           <Box display="flex" mt={25}>
-            <Box>
+            <Link href="/notification" textDecoration={"none"} color={"black"}>
               <i className="fas fa-regular fa-bell" style={{ fontSize: '35px', margin: '10px 10px 0 0' }}></i>
-            </Box>
+              <Badge w={30} h={30} mt={-40}>{count}</Badge>
+            </Link>
             <Button
               onClick={onOpen}
               w={50}
@@ -64,7 +89,7 @@ const TopHeader = () => {
               ></Image>
             ) : (
               <Image
-              src='/not-profileicon.jpg'
+              src='/not_profileicon.jpg'
               alt="prof_image"
               w={50}
               h={50}
@@ -75,7 +100,6 @@ const TopHeader = () => {
           </Box>
           <Drawer
             isOpen={isOpen}
-            onClose={onClose}
             placement="right"
             w="200px"
             h="auto"
@@ -83,9 +107,9 @@ const TopHeader = () => {
             border="1px solid #000"
             bg="#fff"
             size={"xs"}
-            zIndex={20}
-            backgroundColor={"blue"}
-          >
+            backgroundColor={"white"}
+          ><DrawerOverlay bg="rgba(0, 0, 0, 0.6)" />
+            <CloseButton onClick={onClose} w={50} h={50} borderRadius={100}></CloseButton>
             <DrawerHeader mt={50} textAlign="right">
               <h1 className="username">{userData.name}</h1>
             </DrawerHeader>

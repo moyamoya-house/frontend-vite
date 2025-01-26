@@ -1,12 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { Box,Image, Link, Tabs, Text, Tab, TabPanels, TabPanel } from "@yamada-ui/react";
 import './css/mypage.css'
-import Follow from "../follow/follow";
-import UserPost from "./component/user_post";
-import BookmarkPost from "./component/bookmark_post";
+import Follow from "../follow/follow.tsx";
+import UserPost from "./component/user_post.tsx";
+import BookmarkPost from "./component/bookmark_post.tsx";
+
+interface User {
+    user_id: number;
+    name: string;
+    prof_image: string;
+    second_image: string;
+    prof_comment: string;
+}
 
 const Mypage  = () => {
-    const [useData, setUseData] = useState(null);
+    const [useData, setUseData] = useState<User | null>(null);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -35,7 +43,8 @@ const Mypage  = () => {
                         <Image src={`http://127.0.0.1:5000/second_image/${useData.second_image}`}></Image>
                     ) : (
                         <Box h={300} bg={"aquamarine"}></Box>
-                    )}                </Box>
+                    )}
+                </Box>
                 <Box position="relative" display="flex" >
                 <Box 
                     w={160} 
